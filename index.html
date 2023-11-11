@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Image Composite with Overlaps</title>
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; }
+  .composite-container { position: relative; width: 600px; height: 600px; border: 1px solid #ccc; }
+  .image-section { position: absolute; border-radius: 15px; overflow: hidden; }
+  canvas { display: none; }
+</style>
+</head>
+<body>
+<h2>Upload and Composite Images</h2>
+
+<input type="file" id="imageInput1" accept="image/*">
+<input type="file" id="imageInput2" accept="image/*">
+<input type="file" id="imageInput3" accept="image/*">
+<button id="composeButton">Compose Images</button>
+
+<div class="composite-container" id="compositeContainer"></div>
+
+<canvas id="canvas1"></canvas>
+<canvas id="canvas2"></canvas>
+<canvas id="canvas3"></canvas>
+
+<script>
+  const images = [];
+  let imagesLoaded = 0;
+
+  function handleImageUpload(event, index) {
+    const [file] = event.target.files;
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          images[index] = img;
+          imagesLoaded++;
+          if (imagesLoaded === 3) {
+            document.getElementById('composeButton').disabled = false;
+          }
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  function composeImages() {
+    const container = document.getElementById('compositeContainer');
+    container.innerHTML = ''; // Clear previous composition
+
+    // Define composite dimensions
+    const compositeWidth = container.clientWidth;
+    const compositeHeight = container.clientHeight;
+
+    images.forEach((img, zIndex) => {
+      const section = document.createElement('div');
+      section.classList.add('image-section');
+      section.style.width = `${compositeWidth}px`;
+      section.style.height = `${compositeHeight}px`;
+      section.style.zIndex = zIndex;
+      section.style.opacity = '0.6'; // Set the opacity for overlap effect
+      section.style.backgroundImage = `url('${img.src}')`;
+      section.style.backgroundPosition = `${Math.random() * -compositeWidth}px ${Math.random() * -compositeHeight}px`;
+      container.appendChild(section);
+    });
+  }
+
+  document.getElementById('imageInput1').addEventListener('change', (e) => handleImageUpload(e, 0));
+  document.getElementById('imageInput2').addEventListener('change', (e) => handleImageUpload(e, 1));
+  document.getElementById('imageInput3').addEventListener('change', (e) => handleImageUpload(e, 2));
+  document.getElementById('composeButton').addEventListener('click', composeImages);
+</script>
+</body>
+</html>
